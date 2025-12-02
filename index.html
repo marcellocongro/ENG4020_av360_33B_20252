@@ -8,76 +8,46 @@ body { font-family: Arial, sans-serif; margin: 20px; max-width: 900px; }
 .container { padding: 20px; border-radius: 10px; background: #f5f5f5; }
 input, select, textarea { width: 100%; margin-top: 8px; margin-bottom: 15px; padding: 8px; }
 button { padding: 12px; font-size: 16px; cursor: pointer; }
-h2 { margin-top: 40px; }
+h2 { margin-top: 30px; }
 .caixa { padding: 15px; background: white; border-radius: 8px; margin-bottom: 20px; }
+.small { font-size: 0.9em; color: #555; }
 </style>
 </head>
 <body>
 
 <h1>Avaliação 360°</h1>
 <p>
-Complete sua avaliação seguindo as regras: 
-<b>apenas 1 nota 6</b> e <b>no máximo 2 notas 5</b>. 
-Você deve avaliar todos os integrantes da sua equipe, inclusive a si mesmo.
+Cada estudante deve avaliar <b>todos os integrantes da sua própria equipe</b>, 
+<b>incluindo a si mesmo</b>, com notas de 1 a 6 e justificativa.
+<br>
+Regras: <b>apenas 1 nota 6</b> e <b>no máximo 2 notas 5</b> no total.
 </p>
 
 <div class="container">
 
 <form id="form-avaliacao"
       method="POST"
-      action="https://script.google.com/macros/s/AKfycbzHEJU4328PQqlFei108PQ8xtD_raaZQL81tSR0SKnWuS33JhdIDurQzBu4XK2HFIjN/exec"
+      action="https://script.google.com/macros/s/AKfycbyv5f2DDZZbc9LqWPJdnwQYLezurafPuVq3rnvLLyCx2COkSUxV1LEZQzKdzuk7N12H/exec"
       target="hidden_iframe"
       onsubmit="return enviar(event)">
 
-  <label>Seu nome:</label>
-  <select id="aluno">
+  <label>Selecione sua equipe:</label>
+  <select id="equipe">
     <option value="">Selecione...</option>
+    <option value="1">Equipe 1</option>
+    <option value="2">Equipe 2</option>
+    <option value="3">Equipe 3</option>
+    <option value="4">Equipe 4</option>
+    <option value="5">Equipe 5</option>
+  </select>
 
-    <optgroup label="EQUIPE 1">
-      <option>Ana Clara Pitzer</option>
-      <option>Fernanda Weiskopf</option>
-      <option>Kaylane Lima</option>
-      <option>Julia Matias</option>
-      <option>Maria Eduarda Pinheiro</option>
-      <option>Maria Eduarda Romeu</option>
-    </optgroup>
-
-    <optgroup label="EQUIPE 2">
-      <option>Julia Barra</option>
-      <option>Juliana Cavalcanti</option>
-      <option>Laura Azevedo</option>
-      <option>Marina Vidigal</option>
-      <option>Sofia Carvalho</option>
-    </optgroup>
-
-    <optgroup label="EQUIPE 3">
-      <option>Arthur Malta</option>
-      <option>Carlos Eduardo Fragozo</option>
-      <option>Cezar Augusto Areias</option>
-      <option>Felipe Saul</option>
-      <option>Eric Grillo</option>
-      <option>Gustavo Geller</option>
-    </optgroup>
-
-    <optgroup label="EQUIPE 4">
-      <option>Beny Steinberg</option>
-      <option>Fernando Oliveira</option>
-      <option>João Solberg</option>
-      <option>Rodrigo Castro</option>
-      <option>Pedro Antonio Cafasso</option>
-      <option>Pietro Maiolino</option>
-    </optgroup>
-
-    <optgroup label="EQUIPE 5">
-      <option>Bruno Contanza</option>
-      <option>Caio Romero</option>
-      <option>Diego Pedrosa</option>
-      <option>Enzo Senna</option>
-      <option>Ricardo Paciello</option>
-    </optgroup>
+  <label>Seu nome:</label>
+  <select id="aluno" disabled>
+    <option value="">Selecione a equipe primeiro...</option>
   </select>
 
   <h2>Avalie os membros da SUA equipe:</h2>
+  <p class="small">Preencha nota (1 a 6) e justificativa para cada membro, inclusive você.</p>
   <div id="avaliacoes"></div>
 
   <!-- Campo oculto que leva o JSON para o Apps Script -->
@@ -94,7 +64,7 @@ Você deve avaliar todos os integrantes da sua equipe, inclusive a si mesmo.
 <iframe name="hidden_iframe" style="display:none;"></iframe>
 
 <script>
-// Mapeamento das equipes
+// MAPEAMENTO DAS EQUIPES
 const equipes = {
   1: ["Ana Clara Pitzer","Fernanda Weiskopf","Kaylane Lima","Julia Matias","Maria Eduarda Pinheiro","Maria Eduarda Romeu"],
   2: ["Julia Barra","Juliana Cavalcanti","Laura Azevedo","Marina Vidigal","Sofia Carvalho"],
@@ -103,31 +73,46 @@ const equipes = {
   5: ["Bruno Contanza","Caio Romero","Diego Pedrosa","Enzo Senna","Ricardo Paciello"]
 };
 
-// Descobre a equipe a partir do nome do aluno
-function obterEquipeDoAluno(nomeAluno) {
-  for (const key in equipes) {
-    if (equipes[key].includes(nomeAluno)) {
-      return equipes[key]; // retorna o array com todos os nomes da equipe
-    }
-  }
-  return null;
-}
+// Quando selecionar equipe, preencher dropdown de aluno com nomes daquela equipe
+document.getElementById("equipe").addEventListener("change", function() {
+  const equipeSelecionada = this.value;
+  const alunoSelect = document.getElementById("aluno");
+  const avaliacaoDiv = document.getElementById("avaliacoes");
 
-function gerarCampos(){
-  const aluno = document.getElementById("aluno").value;
-  const box = document.getElementById("avaliacoes");
-  box.innerHTML = "";
-  if(!aluno) return;
+  alunoSelect.innerHTML = "";
+  avaliacaoDiv.innerHTML = "";
 
-  const equipe = obterEquipeDoAluno(aluno);
-  if (!equipe) {
-    box.innerHTML = "<p style='color:red;'>Erro: aluno não encontrado em nenhuma equipe.</p>";
+  if (!equipeSelecionada) {
+    alunoSelect.disabled = true;
+    alunoSelect.innerHTML = '<option value="">Selecione a equipe primeiro...</option>';
     return;
   }
 
-  // Gera campos apenas para os membros da própria equipe, incluindo o próprio aluno
-  equipe.forEach(nome => {
-    box.innerHTML += `
+  const membros = equipes[equipeSelecionada];
+  alunoSelect.disabled = false;
+  alunoSelect.innerHTML = '<option value="">Selecione seu nome...</option>';
+
+  membros.forEach(nome => {
+    const opt = document.createElement("option");
+    opt.value = nome;
+    opt.textContent = nome;
+    alunoSelect.appendChild(opt);
+  });
+});
+
+// Quando selecionar o aluno, gerar campos de avaliação apenas para a equipe dele (inclusive ele mesmo)
+document.getElementById("aluno").addEventListener("change", function() {
+  const equipeSelecionada = document.getElementById("equipe").value;
+  const aluno = this.value;
+  const avaliacaoDiv = document.getElementById("avaliacoes");
+  avaliacaoDiv.innerHTML = "";
+
+  if (!equipeSelecionada || !aluno) return;
+
+  const membros = equipes[equipeSelecionada];
+
+  membros.forEach(nome => {
+    avaliacaoDiv.innerHTML += `
       <div class="caixa">
         <h3>${nome}</h3>
         <label>Nota (1 a 6):</label>
@@ -142,14 +127,19 @@ function gerarCampos(){
       </div>
     `;
   });
-}
-
-document.getElementById("aluno").addEventListener("change", gerarCampos);
+});
 
 function enviar(event){
   event.preventDefault(); // impede o envio automático até montarmos os dados
 
+  const equipe = document.getElementById("equipe").value;
   const aluno = document.getElementById("aluno").value;
+  const retorno = document.getElementById("retorno");
+
+  if (!equipe) {
+    alert("Selecione sua equipe.");
+    return false;
+  }
   if (!aluno) {
     alert("Selecione seu nome.");
     return false;
@@ -165,6 +155,7 @@ function enviar(event){
     }
   });
 
+  // Regras de notas
   const n6 = avaliacoes.filter(a => a.nota === 6).length;
   const n5 = avaliacoes.filter(a => a.nota === 5).length;
 
@@ -179,19 +170,17 @@ function enviar(event){
 
   const payload = {
     nome: aluno,
+    equipe: equipe,
     avaliacoes: avaliacoes
   };
 
-  // Coloca o JSON no campo oculto e envia o form normalmente
+  // Coloca o JSON no campo oculto e envia o form normalmente (sem CORS)
   document.getElementById("campo-data").value = JSON.stringify(payload);
-
-  // Envia o formulário via POST para o Apps Script (sem CORS)
   document.getElementById("form-avaliacao").submit();
 
-  // Feedback ao usuário
-  document.getElementById("retorno").textContent = "Avaliação enviada! Você já pode fechar esta página.";
+  retorno.textContent = "Avaliação enviada! Você já pode fechar esta página.";
   setTimeout(() => {
-    document.getElementById("retorno").textContent = "";
+    retorno.textContent = "";
     document.getElementById("form-avaliacao").reset();
     document.getElementById("avaliacoes").innerHTML = "";
   }, 3000);
