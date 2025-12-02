@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Avaliação 360°</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; padding: 10px; }
+  label { font-weight: bold; margin-top: 12px; display: block; }
+  .aluno { border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; background:#fafafa; }
+  button { margin-top: 12px; padding: 10px 16px; font-size: 16px; }
+  .note { font-size: 0.9em; color:#555; margin-top:8px; }
+</style>
+</head>
+<body>
+
+<h2>Avaliação 360° – Formulário</h2>
+
+<p>Preencha seu nome, selecione sua equipe e avalie cada colega com nota (1 a 6) e justificativa.</p>
+
+<label>Seu nome:</label>
+<input id="aluno" type="text" style="width: 100%" autocomplete="off">
+
+<label>Sua equipe:</label>
+<select id="equipe" onchange="carregarIntegrantes()">
+  <option value="">Selecione...</option>
+  <option value="1">Equipe 1</option>
+  <option value="2">Equipe 2</option>
+  <option value="3">Equipe 3</option>
+  <option value="4">Equipe 4</option>
+  <option value="5">Equipe 5</option>
+</select>
+
+<div id="form-area"></div>
+
+<button onclick="enviar()">Enviar Avaliação</button>
+
+<p class="note">Observações: Somente 1 nota 6 é permitida; no máximo 2 notas 5. Notas 1–4 são livres.</p>
+
+<script>
+const equipes = {
+  1: ["Ana Clara Pitzer","Fernanda Weiskopf","Kaylane Lima","Julia Matias","Maria Eduarda Pinheiro","Maria Eduarda Romeu"],
+  2: ["Julia Barra","Juliana Cavalcanti","Laura Azevedo","Marina Vidigal","Sofia Carvalho"],
+  3: ["Arthur Malta","Carlos Eduardo Fragozo","Cezar Augusto Areias","Felipe Saul","Eric Grillo","Gustavo Geller"],
+  4: ["Beny Steinberg","Fernando Oliveira","João Solberg","Rodrigo Castro","Pedro Antonio Cafasso","Pietro Maiolino"],
+  5: ["Bruno Contanza","Caio Romero","Diego Pedrosa","Enzo Senna","Ricardo Paciello"]
+};
+
+function carregarIntegrantes() {
+  const equipe = document.getElementById("equipe").value;
+  const area = document.getElementById("form-area");
+  area.innerHTML = "";
+
+  if (!equipe) return;
+
+  equipes[equipe].forEach(nome => {
+    area.innerHTML += `
+      <div class="aluno">
+        <h4>${nome}</h4>
+        <label>Nota (1 a 6):</label>
+        <select class="nota" data-nome="${nome}">
+          <option value="">-</option>
+          <option>1</option><option>2</option><option>3</option>
+          <option>4</option><option>5</option><option>6</option>
+        </select>
+        <label>Justificativa:</label>
+        <textarea class="just" data-nome="${nome}" style="width:100%" rows="2"></textarea>
+      </div>
+    `;
+  });
+}
+
+async function enviar() {
+  const aluno = document.getElementById("aluno").value.trim();
+  const equipe = document.getElementById("equipe").value;
+
+  if (!aluno) {
+    return alert("Por favor, preencha seu nome.");
+  }
+  if (!equipe) {
+    return alert("Por favor, selecione sua equipe.");
+  }
+
+  const notasElems = [...document.querySelectorAll(".nota")];
+  const notas = notasElems.map(n => Number(n.value)).filter(n => !isNaN(n));
+  const count6 = notas.filter(n => n === 6).length;
+  const count5 = notas.filter(n => n === 5).length;
+
+  if (count6 > 1) return alert("Você só pode dar UMA nota 6.");
+  if (count5 > 2) return alert("Você só pode dar NO MÁXIMO duas notas 5.");
+
+  const avaliacoes = equipes[equipe].map(nome => {
+    const notaElem = document.querySelector(`.nota[data-nome="${nome}"]`);
+    const justElem = document.querySelector(`.just[data-nome="${nome}"]`);
+    return {
+      nome,
+      nota: notaElem ? Number(notaElem.value) || "" : "",
+      justificativa: justElem ? justElem.value.trim() : ""
+    };
+  });
+
+  const payload = { aluno, equipe, avaliacoes };
+
+  try {
+    const resp = await fetch("https://script.google.com/macros/s/AKfycbxVw7XBKDgyKyQUyRwf43-ypsNHIUNRujAfI8bHXzDahV2w4UgT97P1u7ZsamNmZ7w-/exec", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!resp.ok) throw new Error("Erro ao enviar: " + resp.statusText);
+    const j = await resp.json();
+    if (j.status === "ok") {
+      alert("Sua avaliação foi registrada. Obrigado!");
+      location.reload();
+    } else {
+      alert("Resposta do servidor: " + JSON.stringify(j));
+    }
+  } catch (err) {
+    alert("Falha ao enviar avaliação. Veja console para detalhes.");
+    console.error(err);
+  }
+}
+</script>
+
+</body>
+</html>
