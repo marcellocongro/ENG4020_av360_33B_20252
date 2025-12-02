@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Avaliação 360°</title>
 <style>
-body { font-family: Arial; margin: 20px; max-width: 900px; }
+body { font-family: Arial, sans-serif; margin: 20px; max-width: 900px; }
 .container { padding: 20px; border-radius: 10px; background: #f5f5f5; }
 input, select, textarea { width: 100%; margin-top: 8px; margin-bottom: 15px; padding: 8px; }
 button { padding: 12px; font-size: 16px; cursor: pointer; }
@@ -15,13 +15,17 @@ h2 { margin-top: 40px; }
 <body>
 
 <h1>Avaliação 360°</h1>
-<p>Complete sua avaliação seguindo as regras: apenas 1 nota 6 e no máximo 2 notas 5.</p>
+<p>
+Complete sua avaliação seguindo as regras: 
+<b>apenas 1 nota 6</b> e <b>no máximo 2 notas 5</b>. 
+Você deve avaliar todos os integrantes da sua equipe, inclusive a si mesmo.
+</p>
 
 <div class="container">
 
 <form id="form-avaliacao"
       method="POST"
-      action="https://script.google.com/macros/s/AKfycbzHEJU4328PQqlFei108PQ8xtD_raaZQL81tSR0SKnWuS33JhdIDurQzBu4XK2HFIjN/exec"
+      action="SUA_URL_DO_WEB_APP_AQUI"
       target="hidden_iframe"
       onsubmit="return enviar(event)">
 
@@ -71,10 +75,9 @@ h2 { margin-top: 40px; }
       <option>Enzo Senna</option>
       <option>Ricardo Paciello</option>
     </optgroup>
-
   </select>
 
-  <h2>Avalie seus colegas:</h2>
+  <h2>Avalie os membros da SUA equipe:</h2>
   <div id="avaliacoes"></div>
 
   <!-- Campo oculto que leva o JSON para o Apps Script -->
@@ -91,21 +94,39 @@ h2 { margin-top: 40px; }
 <iframe name="hidden_iframe" style="display:none;"></iframe>
 
 <script>
-const nomes = [
-  "Ana Clara Pitzer","Fernanda Weiskopf","Kaylane Lima","Julia Matias","Maria Eduarda Pinheiro","Maria Eduarda Romeu",
-  "Julia Barra","Juliana Cavalcanti","Laura Azevedo","Marina Vidigal","Sofia Carvalho",
-  "Arthur Malta","Carlos Eduardo Fragozo","Cezar Augusto Areias","Felipe Saul","Eric Grillo","Gustavo Geller",
-  "Beny Steinberg","Fernando Oliveira","João Solberg","Rodrigo Castro","Pedro Antonio Cafasso","Pietro Maiolino",
-  "Bruno Contanza","Caio Romero","Diego Pedrosa","Enzo Senna","Ricardo Paciello"
-];
+// Mapeamento das equipes
+const equipes = {
+  1: ["Ana Clara Pitzer","Fernanda Weiskopf","Kaylane Lima","Julia Matias","Maria Eduarda Pinheiro","Maria Eduarda Romeu"],
+  2: ["Julia Barra","Juliana Cavalcanti","Laura Azevedo","Marina Vidigal","Sofia Carvalho"],
+  3: ["Arthur Malta","Carlos Eduardo Fragozo","Cezar Augusto Areias","Felipe Saul","Eric Grillo","Gustavo Geller"],
+  4: ["Beny Steinberg","Fernando Oliveira","João Solberg","Rodrigo Castro","Pedro Antonio Cafasso","Pietro Maiolino"],
+  5: ["Bruno Contanza","Caio Romero","Diego Pedrosa","Enzo Senna","Ricardo Paciello"]
+};
+
+// Descobre a equipe a partir do nome do aluno
+function obterEquipeDoAluno(nomeAluno) {
+  for (const key in equipes) {
+    if (equipes[key].includes(nomeAluno)) {
+      return equipes[key]; // retorna o array com todos os nomes da equipe
+    }
+  }
+  return null;
+}
 
 function gerarCampos(){
   const aluno = document.getElementById("aluno").value;
   const box = document.getElementById("avaliacoes");
   box.innerHTML = "";
-  if (!aluno) return;
+  if(!aluno) return;
 
-  nomes.filter(n => n !== aluno).forEach(nome => {
+  const equipe = obterEquipeDoAluno(aluno);
+  if (!equipe) {
+    box.innerHTML = "<p style='color:red;'>Erro: aluno não encontrado em nenhuma equipe.</p>";
+    return;
+  }
+
+  // Gera campos apenas para os membros da própria equipe, incluindo o próprio aluno
+  equipe.forEach(nome => {
     box.innerHTML += `
       <div class="caixa">
         <h3>${nome}</h3>
@@ -169,7 +190,6 @@ function enviar(event){
 
   // Feedback ao usuário
   document.getElementById("retorno").textContent = "Avaliação enviada! Você já pode fechar esta página.";
-  // opcional: limpar depois de alguns segundos
   setTimeout(() => {
     document.getElementById("retorno").textContent = "";
     document.getElementById("form-avaliacao").reset();
