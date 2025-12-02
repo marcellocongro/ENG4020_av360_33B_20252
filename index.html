@@ -19,136 +19,164 @@ h2 { margin-top: 40px; }
 
 <div class="container">
 
-<label>Seu nome:</label>
-<select id="aluno">
-<option value="">Selecione...</option>
+<form id="form-avaliacao"
+      method="POST"
+      action="https://script.google.com/macros/s/AKfycbzHEJU4328PQqlFei108PQ8xtD_raaZQL81tSR0SKnWuS33JhdIDurQzBu4XK2HFIjN/exec"
+      target="hidden_iframe"
+      onsubmit="return enviar(event)">
 
-<optgroup label="EQUIPE 1">
-<option>Ana Clara Pitzer</option>
-<option>Fernanda Weiskopf</option>
-<option>Kaylane Lima</option>
-<option>Julia Matias</option>
-<option>Maria Eduarda Pinheiro</option>
-<option>Maria Eduarda Romeu</option>
-</optgroup>
+  <label>Seu nome:</label>
+  <select id="aluno">
+    <option value="">Selecione...</option>
 
-<optgroup label="EQUIPE 2">
-<option>Julia Barra</option>
-<option>Juliana Cavalcanti</option>
-<option>Laura Azevedo</option>
-<option>Marina Vidigal</option>
-<option>Sofia Carvalho</option>
-</optgroup>
+    <optgroup label="EQUIPE 1">
+      <option>Ana Clara Pitzer</option>
+      <option>Fernanda Weiskopf</option>
+      <option>Kaylane Lima</option>
+      <option>Julia Matias</option>
+      <option>Maria Eduarda Pinheiro</option>
+      <option>Maria Eduarda Romeu</option>
+    </optgroup>
 
-<optgroup label="EQUIPE 3">
-<option>Arthur Malta</option>
-<option>Carlos Eduardo Fragozo</option>
-<option>Cezar Augusto Areias</option>
-<option>Felipe Saul</option>
-<option>Eric Grillo</option>
-<option>Gustavo Geller</option>
-</optgroup>
+    <optgroup label="EQUIPE 2">
+      <option>Julia Barra</option>
+      <option>Juliana Cavalcanti</option>
+      <option>Laura Azevedo</option>
+      <option>Marina Vidigal</option>
+      <option>Sofia Carvalho</option>
+    </optgroup>
 
-<optgroup label="EQUIPE 4">
-<option>Beny Steinberg</option>
-<option>Fernando Oliveira</option>
-<option>João Solberg</option>
-<option>Rodrigo Castro</option>
-<option>Pedro Antonio Cafasso</option>
-<option>Pietro Maiolino</option>
-</optgroup>
+    <optgroup label="EQUIPE 3">
+      <option>Arthur Malta</option>
+      <option>Carlos Eduardo Fragozo</option>
+      <option>Cezar Augusto Areias</option>
+      <option>Felipe Saul</option>
+      <option>Eric Grillo</option>
+      <option>Gustavo Geller</option>
+    </optgroup>
 
-<optgroup label="EQUIPE 5">
-<option>Bruno Contanza</option>
-<option>Caio Romero</option>
-<option>Diego Pedrosa</option>
-<option>Enzo Senna</option>
-<option>Ricardo Paciello</option>
-</optgroup>
+    <optgroup label="EQUIPE 4">
+      <option>Beny Steinberg</option>
+      <option>Fernando Oliveira</option>
+      <option>João Solberg</option>
+      <option>Rodrigo Castro</option>
+      <option>Pedro Antonio Cafasso</option>
+      <option>Pietro Maiolino</option>
+    </optgroup>
 
-</select>
+    <optgroup label="EQUIPE 5">
+      <option>Bruno Contanza</option>
+      <option>Caio Romero</option>
+      <option>Diego Pedrosa</option>
+      <option>Enzo Senna</option>
+      <option>Ricardo Paciello</option>
+    </optgroup>
 
-<h2>Avalie seus colegas:</h2>
-<div id="avaliacoes"></div>
+  </select>
 
-<button onclick="enviar()">Enviar avaliação</button>
-<p id="retorno" style="font-weight:bold; margin-top:20px;"></p>
+  <h2>Avalie seus colegas:</h2>
+  <div id="avaliacoes"></div>
+
+  <!-- Campo oculto que leva o JSON para o Apps Script -->
+  <input type="hidden" name="data" id="campo-data">
+
+  <button type="submit">Enviar avaliação</button>
+  <p id="retorno" style="font-weight:bold; margin-top:20px;"></p>
+
+</form>
 
 </div>
 
+<!-- iframe invisível para não sair da página ao enviar -->
+<iframe name="hidden_iframe" style="display:none;"></iframe>
+
 <script>
 const nomes = [
-"Ana Clara Pitzer","Fernanda Weiskopf","Kaylane Lima","Julia Matias","Maria Eduarda Pinheiro","Maria Eduarda Romeu",
-"Julia Barra","Juliana Cavalcanti","Laura Azevedo","Marina Vidigal","Sofia Carvalho",
-"Arthur Malta","Carlos Eduardo Fragozo","Cezar Augusto Areias","Felipe Saul","Eric Grillo","Gustavo Geller",
-"Beny Steinberg","Fernando Oliveira","João Solberg","Rodrigo Castro","Pedro Antonio Cafasso","Pietro Maiolino",
-"Bruno Contanza","Caio Romero","Diego Pedrosa","Enzo Senna","Ricardo Paciello"
+  "Ana Clara Pitzer","Fernanda Weiskopf","Kaylane Lima","Julia Matias","Maria Eduarda Pinheiro","Maria Eduarda Romeu",
+  "Julia Barra","Juliana Cavalcanti","Laura Azevedo","Marina Vidigal","Sofia Carvalho",
+  "Arthur Malta","Carlos Eduardo Fragozo","Cezar Augusto Areias","Felipe Saul","Eric Grillo","Gustavo Geller",
+  "Beny Steinberg","Fernando Oliveira","João Solberg","Rodrigo Castro","Pedro Antonio Cafasso","Pietro Maiolino",
+  "Bruno Contanza","Caio Romero","Diego Pedrosa","Enzo Senna","Ricardo Paciello"
 ];
 
 function gerarCampos(){
-    const aluno = document.getElementById("aluno").value;
-    const box = document.getElementById("avaliacoes");
-    box.innerHTML = "";
-    if(!aluno) return;
+  const aluno = document.getElementById("aluno").value;
+  const box = document.getElementById("avaliacoes");
+  box.innerHTML = "";
+  if (!aluno) return;
 
-    nomes.filter(n => n !== aluno).forEach(nome=>{
-        box.innerHTML += `
-        <div class="caixa">
-            <h3>${nome}</h3>
-            <label>Nota (1 a 6):</label>
-            <select class="nota" data-nome="${nome}">
-                <option value="">Selecione...</option>
-                <option>1</option><option>2</option><option>3</option>
-                <option>4</option><option>5</option><option>6</option>
-            </select>
+  nomes.filter(n => n !== aluno).forEach(nome => {
+    box.innerHTML += `
+      <div class="caixa">
+        <h3>${nome}</h3>
+        <label>Nota (1 a 6):</label>
+        <select class="nota" data-nome="${nome}">
+          <option value="">Selecione...</option>
+          <option>1</option><option>2</option><option>3</option>
+          <option>4</option><option>5</option><option>6</option>
+        </select>
 
-            <label>Justificativa:</label>
-            <textarea class="just" data-nome="${nome}" rows="3"></textarea>
-        </div>
-        `;
-    });
+        <label>Justificativa:</label>
+        <textarea class="just" data-nome="${nome}" rows="3"></textarea>
+      </div>
+    `;
+  });
 }
 
 document.getElementById("aluno").addEventListener("change", gerarCampos);
 
-async function enviar(){
-    const aluno = document.getElementById("aluno").value;
-    if(!aluno){ alert("Selecione seu nome."); return; }
+function enviar(event){
+  event.preventDefault(); // impede o envio automático até montarmos os dados
 
-    let avaliacoes = [];
-    document.querySelectorAll(".nota").forEach(sel=>{
-        const nome = sel.getAttribute("data-nome");
-        const nota = Number(sel.value);
-        const justificativa = document.querySelector(`.just[data-nome="${nome}"]`).value;
-        if(nota){
-            avaliacoes.push({ avaliado: nome, nota, justificativa });
-        }
-    });
+  const aluno = document.getElementById("aluno").value;
+  if (!aluno) {
+    alert("Selecione seu nome.");
+    return false;
+  }
 
-    const n6 = avaliacoes.filter(a=>a.nota===6).length;
-    const n5 = avaliacoes.filter(a=>a.nota===5).length;
-
-    if(n6>1){ alert("Você só pode dar UMA nota 6."); return; }
-    if(n5>2){ alert("Você só pode dar no máximo DUAS notas 5."); return; }
-
-    try{
-        const resp = await fetch("https://script.google.com/macros/s/AKfycbzIXbCsLeWHB2pmYjmmNpHklRLhVE927C0f___l2jjUHTePQM8gDjrLAiNCfjL3JfKl/exec", {
-            method:"POST",
-            body: JSON.stringify({ nome: aluno, avaliacoes })
-        });
-
-        const json = await resp.json();
-
-        if(json.success){
-            alert("Avaliação enviada com sucesso!");
-            location.reload();
-        } else {
-            alert("Erro: " + json.error);
-        }
-
-    } catch(e){
-        alert("Falha ao enviar. Verifique sua conexão.");
+  let avaliacoes = [];
+  document.querySelectorAll(".nota").forEach(sel => {
+    const nome = sel.getAttribute("data-nome");
+    const nota = Number(sel.value);
+    const justificativa = document.querySelector(`.just[data-nome="${nome}"]`).value;
+    if (nota) {
+      avaliacoes.push({ avaliado: nome, nota, justificativa });
     }
+  });
+
+  const n6 = avaliacoes.filter(a => a.nota === 6).length;
+  const n5 = avaliacoes.filter(a => a.nota === 5).length;
+
+  if (n6 > 1) {
+    alert("Você só pode dar UMA nota 6.");
+    return false;
+  }
+  if (n5 > 2) {
+    alert("Você só pode dar no máximo DUAS notas 5.");
+    return false;
+  }
+
+  const payload = {
+    nome: aluno,
+    avaliacoes: avaliacoes
+  };
+
+  // Coloca o JSON no campo oculto e envia o form normalmente
+  document.getElementById("campo-data").value = JSON.stringify(payload);
+
+  // Envia o formulário via POST para o Apps Script (sem CORS)
+  document.getElementById("form-avaliacao").submit();
+
+  // Feedback ao usuário
+  document.getElementById("retorno").textContent = "Avaliação enviada! Você já pode fechar esta página.";
+  // opcional: limpar depois de alguns segundos
+  setTimeout(() => {
+    document.getElementById("retorno").textContent = "";
+    document.getElementById("form-avaliacao").reset();
+    document.getElementById("avaliacoes").innerHTML = "";
+  }, 3000);
+
+  return false;
 }
 </script>
 
