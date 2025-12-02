@@ -1,124 +1,155 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Avaliação 360°</title>
 <style>
-  body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; padding: 10px; }
-  label { font-weight: bold; margin-top: 12px; display: block; }
-  .aluno { border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; background:#fafafa; }
-  button { margin-top: 12px; padding: 10px 16px; font-size: 16px; }
-  .note { font-size: 0.9em; color:#555; margin-top:8px; }
+body { font-family: Arial; margin: 20px; max-width: 900px; }
+.container { padding: 20px; border-radius: 10px; background: #f5f5f5; }
+input, select, textarea { width: 100%; margin-top: 8px; margin-bottom: 15px; padding: 8px; }
+button { padding: 12px; font-size: 16px; cursor: pointer; }
+h2 { margin-top: 40px; }
+.caixa { padding: 15px; background: white; border-radius: 8px; margin-bottom: 20px; }
 </style>
 </head>
 <body>
 
-<h2>Avaliação 360° – Formulário</h2>
+<h1>Avaliação 360°</h1>
+<p>Complete sua avaliação seguindo as regras: apenas 1 nota 6 e no máximo 2 notas 5.</p>
 
-<p>Preencha seu nome, selecione sua equipe e avalie cada colega com nota (1 a 6) e justificativa.</p>
+<div class="container">
 
 <label>Seu nome:</label>
-<input id="aluno" type="text" style="width: 100%" autocomplete="off">
+<select id="aluno">
+<option value="">Selecione...</option>
 
-<label>Sua equipe:</label>
-<select id="equipe" onchange="carregarIntegrantes()">
-  <option value="">Selecione...</option>
-  <option value="1">Equipe 1</option>
-  <option value="2">Equipe 2</option>
-  <option value="3">Equipe 3</option>
-  <option value="4">Equipe 4</option>
-  <option value="5">Equipe 5</option>
+<optgroup label="EQUIPE 1">
+<option>Ana Clara Pitzer</option>
+<option>Fernanda Weiskopf</option>
+<option>Kaylane Lima</option>
+<option>Julia Matias</option>
+<option>Maria Eduarda Pinheiro</option>
+<option>Maria Eduarda Romeu</option>
+</optgroup>
+
+<optgroup label="EQUIPE 2">
+<option>Julia Barra</option>
+<option>Juliana Cavalcanti</option>
+<option>Laura Azevedo</option>
+<option>Marina Vidigal</option>
+<option>Sofia Carvalho</option>
+</optgroup>
+
+<optgroup label="EQUIPE 3">
+<option>Arthur Malta</option>
+<option>Carlos Eduardo Fragozo</option>
+<option>Cezar Augusto Areias</option>
+<option>Felipe Saul</option>
+<option>Eric Grillo</option>
+<option>Gustavo Geller</option>
+</optgroup>
+
+<optgroup label="EQUIPE 4">
+<option>Beny Steinberg</option>
+<option>Fernando Oliveira</option>
+<option>João Solberg</option>
+<option>Rodrigo Castro</option>
+<option>Pedro Antonio Cafasso</option>
+<option>Pietro Maiolino</option>
+</optgroup>
+
+<optgroup label="EQUIPE 5">
+<option>Bruno Contanza</option>
+<option>Caio Romero</option>
+<option>Diego Pedrosa</option>
+<option>Enzo Senna</option>
+<option>Ricardo Paciello</option>
+</optgroup>
+
 </select>
 
-<div id="form-area"></div>
+<h2>Avalie seus colegas:</h2>
+<div id="avaliacoes"></div>
 
-<button onclick="enviar()">Enviar Avaliação</button>
+<button onclick="enviar()">Enviar avaliação</button>
+<p id="retorno" style="font-weight:bold; margin-top:20px;"></p>
 
-<p class="note">Observações: Somente 1 nota 6 é permitida; no máximo 2 notas 5. Notas 1–4 são livres.</p>
+</div>
 
 <script>
-const equipes = {
-  1: ["Ana Clara Pitzer","Fernanda Weiskopf","Kaylane Lima","Julia Matias","Maria Eduarda Pinheiro","Maria Eduarda Romeu"],
-  2: ["Julia Barra","Juliana Cavalcanti","Laura Azevedo","Marina Vidigal","Sofia Carvalho"],
-  3: ["Arthur Malta","Carlos Eduardo Fragozo","Cezar Augusto Areias","Felipe Saul","Eric Grillo","Gustavo Geller"],
-  4: ["Beny Steinberg","Fernando Oliveira","João Solberg","Rodrigo Castro","Pedro Antonio Cafasso","Pietro Maiolino"],
-  5: ["Bruno Contanza","Caio Romero","Diego Pedrosa","Enzo Senna","Ricardo Paciello"]
-};
+const nomes = [
+"Ana Clara Pitzer","Fernanda Weiskopf","Kaylane Lima","Julia Matias","Maria Eduarda Pinheiro","Maria Eduarda Romeu",
+"Julia Barra","Juliana Cavalcanti","Laura Azevedo","Marina Vidigal","Sofia Carvalho",
+"Arthur Malta","Carlos Eduardo Fragozo","Cezar Augusto Areias","Felipe Saul","Eric Grillo","Gustavo Geller",
+"Beny Steinberg","Fernando Oliveira","João Solberg","Rodrigo Castro","Pedro Antonio Cafasso","Pietro Maiolino",
+"Bruno Contanza","Caio Romero","Diego Pedrosa","Enzo Senna","Ricardo Paciello"
+];
 
-function carregarIntegrantes() {
-  const equipe = document.getElementById("equipe").value;
-  const area = document.getElementById("form-area");
-  area.innerHTML = "";
+function gerarCampos(){
+    const aluno = document.getElementById("aluno").value;
+    const box = document.getElementById("avaliacoes");
+    box.innerHTML = "";
+    if(!aluno) return;
 
-  if (!equipe) return;
+    nomes.filter(n => n !== aluno).forEach(nome=>{
+        box.innerHTML += `
+        <div class="caixa">
+            <h3>${nome}</h3>
+            <label>Nota (1 a 6):</label>
+            <select class="nota" data-nome="${nome}">
+                <option value="">Selecione...</option>
+                <option>1</option><option>2</option><option>3</option>
+                <option>4</option><option>5</option><option>6</option>
+            </select>
 
-  equipes[equipe].forEach(nome => {
-    area.innerHTML += `
-      <div class="aluno">
-        <h4>${nome}</h4>
-        <label>Nota (1 a 6):</label>
-        <select class="nota" data-nome="${nome}">
-          <option value="">-</option>
-          <option>1</option><option>2</option><option>3</option>
-          <option>4</option><option>5</option><option>6</option>
-        </select>
-        <label>Justificativa:</label>
-        <textarea class="just" data-nome="${nome}" style="width:100%" rows="2"></textarea>
-      </div>
-    `;
-  });
+            <label>Justificativa:</label>
+            <textarea class="just" data-nome="${nome}" rows="3"></textarea>
+        </div>
+        `;
+    });
 }
 
-async function enviar() {
-  const aluno = document.getElementById("aluno").value.trim();
-  const equipe = document.getElementById("equipe").value;
+document.getElementById("aluno").addEventListener("change", gerarCampos);
 
-  if (!aluno) {
-    return alert("Por favor, preencha seu nome.");
-  }
-  if (!equipe) {
-    return alert("Por favor, selecione sua equipe.");
-  }
+async function enviar(){
+    const aluno = document.getElementById("aluno").value;
+    if(!aluno){ alert("Selecione seu nome."); return; }
 
-  const notasElems = [...document.querySelectorAll(".nota")];
-  const notas = notasElems.map(n => Number(n.value)).filter(n => !isNaN(n));
-  const count6 = notas.filter(n => n === 6).length;
-  const count5 = notas.filter(n => n === 5).length;
-
-  if (count6 > 1) return alert("Você só pode dar UMA nota 6.");
-  if (count5 > 2) return alert("Você só pode dar NO MÁXIMO duas notas 5.");
-
-  const avaliacoes = equipes[equipe].map(nome => {
-    const notaElem = document.querySelector(`.nota[data-nome="${nome}"]`);
-    const justElem = document.querySelector(`.just[data-nome="${nome}"]`);
-    return {
-      nome,
-      nota: notaElem ? Number(notaElem.value) || "" : "",
-      justificativa: justElem ? justElem.value.trim() : ""
-    };
-  });
-
-  const payload = { aluno, equipe, avaliacoes };
-
-  try {
-    const resp = await fetch("https://script.google.com/macros/s/AKfycbxVw7XBKDgyKyQUyRwf43-ypsNHIUNRujAfI8bHXzDahV2w4UgT97P1u7ZsamNmZ7w-/exec", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+    let avaliacoes = [];
+    document.querySelectorAll(".nota").forEach(sel=>{
+        const nome = sel.getAttribute("data-nome");
+        const nota = Number(sel.value);
+        const justificativa = document.querySelector(`.just[data-nome="${nome}"]`).value;
+        if(nota){
+            avaliacoes.push({ avaliado: nome, nota, justificativa });
+        }
     });
 
-    if (!resp.ok) throw new Error("Erro ao enviar: " + resp.statusText);
-    const j = await resp.json();
-    if (j.status === "ok") {
-      alert("Sua avaliação foi registrada. Obrigado!");
-      location.reload();
-    } else {
-      alert("Resposta do servidor: " + JSON.stringify(j));
+    const n6 = avaliacoes.filter(a=>a.nota===6).length;
+    const n5 = avaliacoes.filter(a=>a.nota===5).length;
+
+    if(n6>1){ alert("Você só pode dar UMA nota 6."); return; }
+    if(n5>2){ alert("Você só pode dar no máximo DUAS notas 5."); return; }
+
+    try{
+        const resp = await fetch("https://script.google.com/macros/s/AKfycbzIXbCsLeWHB2pmYjmmNpHklRLhVE927C0f___l2jjUHTePQM8gDjrLAiNCfjL3JfKl/exec", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ nome: aluno, avaliacoes })
+        });
+
+        const json = await resp.json();
+
+        if(json.success){
+            alert("Avaliação enviada com sucesso!");
+            location.reload();
+        } else {
+            alert("Erro: " + json.error);
+        }
+
+    } catch(e){
+        alert("Falha ao enviar. Verifique sua conexão.");
     }
-  } catch (err) {
-    alert("Falha ao enviar avaliação. Veja console para detalhes.");
-    console.error(err);
-  }
 }
 </script>
 
