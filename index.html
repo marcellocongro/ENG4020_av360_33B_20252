@@ -132,9 +132,8 @@ async function enviar(){
     if(n5>2){ alert("Você só pode dar no máximo DUAS notas 5."); return; }
 
     try{
-        const resp = await fetch("https://script.google.com/macros/s/AKfycbzIXbCsLeWHB2pmYjmmNpHklRLhVE927C0f___l2jjUHTePQM8gDjrLAiNCfjL3JfKl/exec", {
+        const resp = await fetch("COLOQUE_AQUI_A_URL_DO_WEB_APP", {
             method:"POST",
-            headers:{ "Content-Type":"application/json" },
             body: JSON.stringify({ nome: aluno, avaliacoes })
         });
 
